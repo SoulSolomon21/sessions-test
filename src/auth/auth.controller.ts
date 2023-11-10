@@ -1,22 +1,23 @@
 import { Controller, Get, InternalServerErrorException, Post, Req, Session, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
-import { IsAuthenticatedGuard } from './guards/is-authenticated/is-authenticated.guard';
 import { Request } from 'express';
+import { IsAuthenticatedGuard } from './guards/is-authenticated/is-authenticated.guard';
+import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-    @UseGuards(LocalAuthGuard)
+
     @Post('login')
+    @UseGuards(LocalAuthGuard)
     login(@Req() request: any, @Session() session: any) {
         console.log({ session });
         console.log({ request });
 
-        return session;
+        return request.user;
     }
 
-    @UseGuards(IsAuthenticatedGuard)
     @Post('logout')
+    @UseGuards(IsAuthenticatedGuard)
     async logout(@Req() request: Request) {
         const logoutError = await new Promise((resolve) =>
             request.logOut({ keepSessionInfo: false }, (error) =>
@@ -35,8 +36,8 @@ export class AuthController {
         };
     }
 
-    @UseGuards(IsAuthenticatedGuard)
     @Get('protected')
+    @UseGuards(IsAuthenticatedGuard)
     protected() {
         return {
             message: 'This route is protected against unauthenticated users!',
